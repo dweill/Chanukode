@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 80" width="24" height="80">
+    <!-- Candle body -->
+    <rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
+    <!-- Wick -->
+    <rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
+    <!-- Flame -->
+    <ellipse cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/>
+</svg> 
