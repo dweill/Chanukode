@@ -73,6 +73,12 @@
             80% { transform: scaleY(0.99) scaleX(1.01) translateY(1px) skewX(0.3deg); opacity: 0.98; }
             100% { transform: scaleY(1) scaleX(1) translateY(0) skewX(0deg); opacity: 1; }
         }
+        .candle-body {
+            transition: none;
+        }
+        .candle-wick {
+            transition: none;
+        }
     </style>
 </head>
 
@@ -119,8 +125,8 @@
                 svg.setAttribute('viewBox', '0 0 24 80');
                 svg.classList.add('shamash-svg');
                 svg.innerHTML = `
-                    <rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
-                    <rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
+                    <rect class="candle-body" x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
+                    <rect class="candle-wick" x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
                     <ellipse class="flame flame${i+1}" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/>
                 `;
                 shamashDiv.appendChild(svg);
@@ -135,8 +141,8 @@
                 svg.setAttribute('viewBox', '0 0 24 80');
                 svg.setAttribute('style', `left:${pos.left}px;top:${pos.top}px;`);
                 svg.innerHTML = `
-                    <rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
-                    <rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
+                    <rect class="candle-body" x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
+                    <rect class="candle-wick" x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
                     <ellipse class="flame flame${i+1}" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/>
                 `;
                 wrapper.appendChild(svg);
@@ -218,6 +224,7 @@
                                 const flame = hoveredCandle.querySelector('.flame');
                                 if (flame && !flame.classList.contains('lit')) {
                                     flame.classList.add('lit');
+                                    startBurning(hoveredCandle);
                                 }
                                 holdTimer = null;
                                 lastHoveredCandle = null;
@@ -259,9 +266,106 @@
             }
             if (e.target.closest('.candle')) {
                 const flame = e.target.closest('.candle').querySelector('.flame');
-                if (flame) flame.classList.toggle('lit');
+                if (flame) {
+                    flame.classList.toggle('lit');
+                    if (flame.classList.contains('lit')) {
+                        startBurning(e.target.closest('.candle'));
+                    }
+                }
             }
         });
+        // Add burn-down animation when a candle is lit (JS-driven)
+        function startBurning(candle) {
+            if (candle._burning) return;
+            candle._burning = true;
+            const body = candle.querySelector('.candle-body');
+            const wick = candle.querySelector('.candle-wick');
+            const flame = candle.querySelector('.flame');
+            let bodyHeight = 48, bodyY = 20;
+            let wickHeight = 8, wickY = 16;
+            let flameCy = 12;
+            const burnDuration = 30000; // ms (was 12000)
+            const steps = 60;
+            let step = 0;
+            const bodyHeightStep = bodyHeight / steps;
+            const bodyYStep = (68 - bodyY) / steps;
+            const wickHeightStep = wickHeight / steps;
+            const wickYStep = (68 - wickY) / steps;
+            const flameCyStep = (68 - flameCy) / steps;
+            const svg = candle.tagName === 'svg' ? candle : candle.querySelector('svg');
+            function animate() {
+                if (!flame.classList.contains('lit')) {
+                    candle._burning = false;
+                    return;
+                }
+                if (step >= steps) {
+                    body.setAttribute('height', 0);
+                    body.setAttribute('y', 68);
+                    wick.setAttribute('height', 0);
+                    wick.setAttribute('y', 68);
+                    flame.setAttribute('cy', 68);
+                    flame.classList.remove('lit');
+                    candle._burning = false;
+                    // Add smoke effect
+                    createSmoke(svg, 68);
+                    return;
+                }
+                body.setAttribute('height', Math.max(0, bodyHeight - bodyHeightStep * step));
+                body.setAttribute('y', bodyY + bodyYStep * step);
+                wick.setAttribute('height', Math.max(0, wickHeight - wickHeightStep * step));
+                wick.setAttribute('y', wickY + wickYStep * step);
+                flame.setAttribute('cy', flameCy + flameCyStep * step);
+                step++;
+                setTimeout(animate, burnDuration / steps);
+            }
+            animate();
+        }
+
+        // Smoke effect function
+        function createSmoke(svg, y) {
+            // Continuous smoke trail as a path
+            const points = [];
+            const numPoints = 18;
+            const baseX = 12;
+            let baseY = y - 8;
+            for (let i = 0; i < numPoints; i++) {
+                points.push({
+                    x: baseX,
+                    y: baseY - i * 3,
+                    alpha: 1 - i / numPoints
+                });
+            }
+            const smokePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            smokePath.setAttribute('stroke', '#bbb');
+            smokePath.setAttribute('stroke-width', '2');
+            smokePath.setAttribute('fill', 'none');
+            smokePath.setAttribute('opacity', '0.7');
+            svg.appendChild(smokePath);
+            let frame = 0;
+            const frames = 100;
+            function animateSmokeTrail() {
+                // Animate the points upward, add waviness, fade out
+                for (let i = 0; i < points.length; i++) {
+                    points[i].y -= 0.7 + 0.1 * i;
+                    points[i].x = baseX + Math.sin(frame / 10 + i * 0.7) * (2 + i * 0.2);
+                }
+                // Build the path string
+                let d = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                    d += ` L ${points[i].x} ${points[i].y}`;
+                }
+                smokePath.setAttribute('d', d);
+                // Fade out
+                smokePath.setAttribute('opacity', Math.max(0, 0.7 - frame * 0.01));
+                frame++;
+                if (frame < frames) {
+                    requestAnimationFrame(animateSmokeTrail);
+                } else {
+                    smokePath.remove();
+                }
+            }
+            animateSmokeTrail();
+        }
     </script>
     <script src="app.js"></script>
 </body>
