@@ -10,22 +10,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Yeseva+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        .container {
+        :root {
+            --candle-width: 24px;
+            --candle-height: 80px;
+            --flame-color: #ffd700;
+            --candle-color: #e0e0e0;
+            --wick-color: #444;
+        }
+        body {
+            min-height: 100vh;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+        }
+        .menorah-wrapper {
             position: relative;
             width: 400px;
             height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .menorah-svg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 400px; height: 400px;
+            z-index: 1;
         }
         .candle {
             position: absolute;
-            width: 24px;
-            height: 80px;
+            width: var(--candle-width);
+            height: var(--candle-height);
             cursor: pointer;
             pointer-events: all;
+            z-index: 2;
         }
         .flame {
             transform-origin: 50% 100%;
@@ -36,6 +55,7 @@
             opacity: 1;
             animation: flicker 1.5s infinite alternate;
         }
+        /* Flicker animation and delays as before */
         .flame1 { animation-delay: 0s; animation-duration: 1.6s; }
         .flame2 { animation-delay: 0.2s; animation-duration: 1.8s; }
         .flame3 { animation-delay: 0.4s; animation-duration: 1.5s; }
@@ -60,32 +80,188 @@
 
     <h1>Shalom World!</h1>
 
-    <div class="container">
-        <img src="Menorah.svg" width="400" height="400" alt="Menorah" style="position: absolute; left: 0; top: 0;" />
-        <!-- Candles: left to right, inline SVG with animated flames -->
-        <svg class="candle" style="left: 58px; top: 10px;" viewBox="0 0 24 80" data-candle="1"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame1 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <svg class="candle" style="left: 83px; top: 10px;" viewBox="0 0 24 80" data-candle="2"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame2 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <svg class="candle" style="left: 108px; top: 10px;" viewBox="0 0 24 80" data-candle="3"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame3 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <svg class="candle" style="left: 133px; top: 10px;" viewBox="0 0 24 80" data-candle="4"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame4 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <!-- Central Shamash -->
-        <svg class="candle" style="left: 188px; top: 0px;" viewBox="0 0 24 80" data-candle="5"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame5 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <!-- Right side -->
-        <svg class="candle" style="left: 243px; top: 10px;" viewBox="0 0 24 80" data-candle="6"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame6 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <svg class="candle" style="left: 268px; top: 10px;" viewBox="0 0 24 80" data-candle="7"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame7 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <svg class="candle" style="left: 293px; top: 10px;" viewBox="0 0 24 80" data-candle="8"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame8 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
-        <svg class="candle" style="left: 318px; top: 10px;" viewBox="0 0 24 80" data-candle="9"><rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/><rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/><ellipse class="flame flame9 lit" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/></svg>
+    <div class="menorah-wrapper">
+        <img src="Menorah.svg" class="menorah-svg" alt="Menorah" />
+        <!-- Candles will be injected here by JS -->
     </div>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.candle').forEach(candle => {
-          candle.addEventListener('click', function(e) {
-            const flame = e.currentTarget.querySelector('.flame');
-            if (flame) {
-              flame.classList.toggle('lit');
+        // Candle positions (left, top) for each holder
+        const candlePositions = [
+            { left: 58, top: 10 },
+            { left: 83, top: 10 },
+            { left: 108, top: 10 },
+            { left: 133, top: 10 },
+            { left: 188, top: 0 },   // Shamash
+            { left: 243, top: 10 },
+            { left: 268, top: 10 },
+            { left: 293, top: 10 },
+            { left: 318, top: 10 }
+        ];
+        const wrapper = document.querySelector('.menorah-wrapper');
+        // Assign indices for right-to-left lighting order based on left position
+        const candleMeta = candlePositions
+            .map((pos, i) => ({ pos, i }))
+            .filter(obj => obj.i !== 4) // exclude shamash
+            .sort((a, b) => b.pos.left - a.pos.left)
+            .map((obj, idx) => ({ ...obj, candleIdx: idx }));
+        candlePositions.forEach((pos, i) => {
+            if (i === 4) {
+                // Shamash: use a wrapper div for drag-and-drop
+                const shamashDiv = document.createElement('div');
+                shamashDiv.className = 'shamash-wrapper candle';
+                shamashDiv.style.position = 'absolute';
+                shamashDiv.style.left = pos.left + 'px';
+                shamashDiv.style.top = pos.top + 'px';
+                shamashDiv.style.width = '24px';
+                shamashDiv.style.height = '80px';
+                shamashDiv.style.zIndex = 10;
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 24 80');
+                svg.classList.add('shamash-svg');
+                svg.innerHTML = `
+                    <rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
+                    <rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
+                    <ellipse class="flame flame${i+1}" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/>
+                `;
+                shamashDiv.appendChild(svg);
+                wrapper.appendChild(shamashDiv);
+            } else {
+                // Find the correct candleIdx for this position
+                const meta = candleMeta.find(obj => obj.i === i);
+                const candleIdx = meta ? meta.candleIdx : -1;
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'candle');
+                svg.setAttribute('data-candle-idx', candleIdx);
+                svg.setAttribute('viewBox', '0 0 24 80');
+                svg.setAttribute('style', `left:${pos.left}px;top:${pos.top}px;`);
+                svg.innerHTML = `
+                    <rect x="4" y="20" width="16" height="48" rx="4" fill="#e0e0e0"/>
+                    <rect x="11" y="16" width="2" height="8" rx="1" fill="#444"/>
+                    <ellipse class="flame flame${i+1}" cx="12" cy="12" rx="4" ry="8" fill="#ffd700"/>
+                `;
+                wrapper.appendChild(svg);
             }
-          });
         });
-      });
+        // Drag and drop for shamash
+        let dragTarget = null;
+        let offsetX = 0, offsetY = 0;
+        let dragging = false;
+        let wasDragged = false;
+        let holdTimer = null;
+        let lastHoveredCandle = null;
+        wrapper.addEventListener('mousedown', function(e) {
+            const shamashDiv = wrapper.querySelector('.shamash-wrapper');
+            if (e.target.closest('.shamash-wrapper')) {
+                dragTarget = shamashDiv;
+                const rect = shamashDiv.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                dragging = true;
+                document.body.style.userSelect = 'none';
+                wasDragged = false;
+                // Reset hold-to-light state
+                if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+                lastHoveredCandle = null;
+            }
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (dragTarget && dragging) {
+                const wrapperRect = wrapper.getBoundingClientRect();
+                let x = e.clientX - wrapperRect.left - offsetX;
+                let y = e.clientY - wrapperRect.top - offsetY;
+                // Clamp within wrapper
+                x = Math.max(0, Math.min(wrapper.offsetWidth - 24, x));
+                y = Math.max(0, Math.min(wrapper.offsetHeight - 80, y));
+                dragTarget.style.left = x + 'px';
+                dragTarget.style.top = y + 'px';
+                wasDragged = true;
+                // On drag, check for overlap between shamash flame and any unlit candle wick
+                const shamashDiv = wrapper.querySelector('.shamash-wrapper');
+                const shamashFlame = shamashDiv.querySelector('.flame');
+                if (shamashFlame && shamashFlame.classList.contains('lit')) {
+                    const flameRect = shamashFlame.getBoundingClientRect();
+                    let hoveredCandle = null;
+                    // Get all non-shamash candles, rightmost first
+                    const candles = Array.from(wrapper.querySelectorAll('svg.candle'));
+                    // Sort by data-candle-idx ascending (rightmost first)
+                    candles.sort((a, b) => parseInt(a.getAttribute('data-candle-idx')) - parseInt(b.getAttribute('data-candle-idx')));
+                    // Find the rightmost unlit candle (lowest index)
+                    let rightmostUnlit = null;
+                    for (const candle of candles) {
+                        const flame = candle.querySelector('.flame');
+                        if (flame && !flame.classList.contains('lit')) {
+                            rightmostUnlit = candle;
+                            break;
+                        }
+                    }
+                    candles.forEach((candle) => {
+                        const rects = candle.querySelectorAll('rect');
+                        const wick = rects[1];
+                        const flame = candle.querySelector('.flame');
+                        // Only allow lighting the rightmost unlit candle
+                        if (wick && flame && candle === rightmostUnlit && !flame.classList.contains('lit')) {
+                            const wickRect = wick.getBoundingClientRect();
+                            if (!(flameRect.right < wickRect.left ||
+                                  flameRect.left > wickRect.right ||
+                                  flameRect.bottom < wickRect.top ||
+                                  flameRect.top > wickRect.bottom)) {
+                                hoveredCandle = candle;
+                            }
+                        }
+                    });
+                    // If hovering a new candle, start timer
+                    if (hoveredCandle !== lastHoveredCandle) {
+                        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+                        lastHoveredCandle = hoveredCandle;
+                        if (hoveredCandle) {
+                            holdTimer = setTimeout(() => {
+                                const flame = hoveredCandle.querySelector('.flame');
+                                if (flame && !flame.classList.contains('lit')) {
+                                    flame.classList.add('lit');
+                                }
+                                holdTimer = null;
+                                lastHoveredCandle = null;
+                            }, 1000);
+                        }
+                    }
+                    // If not hovering any candle, clear timer
+                    if (!hoveredCandle && holdTimer) {
+                        clearTimeout(holdTimer); holdTimer = null; lastHoveredCandle = null;
+                    }
+                } else {
+                    // If shamash is not lit, clear timer
+                    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; lastHoveredCandle = null; }
+                }
+            }
+        });
+        document.addEventListener('mouseup', function() {
+            dragTarget = null;
+            dragging = false;
+            document.body.style.userSelect = '';
+            if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; lastHoveredCandle = null; }
+        });
+        // Event delegation for toggling flames
+        wrapper.addEventListener('click', function(e) {
+            if (dragging) {
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+            }
+            // For shamash, flame is inside the SVG in the wrapper
+            if (e.target.closest('.shamash-wrapper')) {
+                if (wasDragged) {
+                    wasDragged = false;
+                    return;
+                }
+                const flame = e.target.closest('.shamash-wrapper').querySelector('.flame');
+                if (flame) flame.classList.toggle('lit');
+                return;
+            }
+            if (e.target.closest('.candle')) {
+                const flame = e.target.closest('.candle').querySelector('.flame');
+                if (flame) flame.classList.toggle('lit');
+            }
+        });
     </script>
     <script src="app.js"></script>
 </body>
