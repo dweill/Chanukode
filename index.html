@@ -86,9 +86,44 @@
 
     <h1>Shalom World!</h1>
 
-    <div class="menorah-wrapper">
-        <img src="Menorah.svg" class="menorah-svg" alt="Menorah" />
-        <!-- Candles will be injected here by JS -->
+    <div class="menorah-wrapper" style="display: flex; gap: 40px; align-items: flex-end; justify-content: center;">
+        <div style="position: relative; width: 400px; height: 400px;">
+            <svg id="interactive-menorah" viewBox="0 0 400 400" width="400" height="400" style="cursor:pointer;">
+                <!-- Ornate Base -->
+                <ellipse class="menorah-color" cx="200" cy="370" rx="70" ry="25" fill="#C0C0C0"/>
+                <ellipse class="menorah-accent" cx="200" cy="360" rx="50" ry="12" fill="#B0B0B0"/>
+                <!-- Central Stem (extended) -->
+                <rect class="menorah-color" x="190" y="60" width="20" height="310" fill="#C0C0C0"/>
+                <!-- Flared top of central stem -->
+                <ellipse class="menorah-color" cx="200" cy="60" rx="16" ry="7" fill="#C0C0C0"/>
+                <!-- Branches (left, upward) -->
+                <path class="menorah-color" d="M 200 200 C 170 180, 150 150, 145 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <path class="menorah-color" d="M 200 220 C 160 200, 130 160, 120 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <path class="menorah-color" d="M 200 240 C 150 220, 110 170, 95 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <path class="menorah-color" d="M 200 260 C 140 240, 90 190, 70 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <!-- Branches (right, upward) -->
+                <path class="menorah-color" d="M 200 200 C 230 180, 250 150, 255 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <path class="menorah-color" d="M 200 220 C 240 200, 270 160, 280 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <path class="menorah-color" d="M 200 240 C 250 220, 290 170, 305 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <path class="menorah-color" d="M 200 260 C 260 240, 310 190, 330 80" stroke="#C0C0C0" stroke-width="10" fill="none"/>
+                <!-- Candle Holders -->
+                <rect class="menorah-color" x="192" y="60" width="16" height="20" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="200" cy="60" rx="10" ry="6" fill="#C0C0C0"/>
+                <!-- Left holders -->
+                <ellipse class="menorah-color" cx="70" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="95" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="120" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="145" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <!-- Right holders -->
+                <ellipse class="menorah-color" cx="330" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="305" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="280" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+                <ellipse class="menorah-color" cx="255" cy="80" rx="10" ry="6" fill="#C0C0C0"/>
+            </svg>
+            <input type="color" id="menorah-color-picker" style="display:none; opacity:0; pointer-events:none; position:absolute;" />
+            <input type="color" id="candle-color-picker" style="display:none; opacity:0; pointer-events:none; position:absolute;" />
+            <!-- Candles will be injected here by JS -->
+        </div>
     </div>
     <script>
         // Candle positions (left, top) for each holder
@@ -264,14 +299,20 @@
                 if (flame) flame.classList.toggle('lit');
                 return;
             }
-            if (e.target.closest('.candle')) {
-                const flame = e.target.closest('.candle').querySelector('.flame');
-                if (flame) {
-                    flame.classList.toggle('lit');
-                    if (flame.classList.contains('lit')) {
-                        startBurning(e.target.closest('.candle'));
-                    }
-                }
+            // For other candles, open color picker and change color (do not toggle flame)
+            const candleSvg = e.target.closest('svg.candle');
+            if (candleSvg) {
+                currentCandleForColor = candleSvg;
+                candleColorPicker.value = rgbToHex(candleSvg.querySelector('.candle-body').getAttribute('fill') || '#e0e0e0');
+                // Position the color picker near the candle
+                const candleRect = candleSvg.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                candleColorPicker.style.position = 'absolute';
+                candleColorPicker.style.left = (candleRect.left - wrapperRect.left + candleRect.width / 2 - 15) + 'px';
+                candleColorPicker.style.top = (candleRect.top - wrapperRect.top - 36) + 'px';
+                candleColorPicker.style.display = 'block';
+                candleColorPicker.click();
+                return;
             }
         });
         // Add burn-down animation when a candle is lit (JS-driven)
@@ -342,7 +383,7 @@
             smokePath.setAttribute('opacity', '0.7');
             svg.appendChild(smokePath);
             let frame = 0;
-            const frames = 100;
+            const frames = 300;
             function animateSmokeTrail() {
                 // Animate the points upward, add waviness, fade out
                 for (let i = 0; i < points.length; i++) {
@@ -356,7 +397,7 @@
                 }
                 smokePath.setAttribute('d', d);
                 // Fade out
-                smokePath.setAttribute('opacity', Math.max(0, 0.7 - frame * 0.01));
+                smokePath.setAttribute('opacity', Math.max(0, 0.7 - frame * 0.0033));
                 frame++;
                 if (frame < frames) {
                     requestAnimationFrame(animateSmokeTrail);
@@ -365,6 +406,95 @@
                 }
             }
             animateSmokeTrail();
+        }
+        // Candle color picker logic
+        const candleColorPicker = document.getElementById('candle-color-picker');
+        let currentCandleForColor = null;
+        wrapper.addEventListener('click', function(e) {
+            if (dragging) {
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+            }
+            // For shamash, flame is inside the SVG in the wrapper
+            if (e.target.closest('.shamash-wrapper')) {
+                if (wasDragged) {
+                    wasDragged = false;
+                    return;
+                }
+                const flame = e.target.closest('.shamash-wrapper').querySelector('.flame');
+                if (flame) flame.classList.toggle('lit');
+                return;
+            }
+            // For other candles, open color picker and change color (do not toggle flame)
+            const candleSvg = e.target.closest('svg.candle');
+            if (candleSvg) {
+                currentCandleForColor = candleSvg;
+                candleColorPicker.value = rgbToHex(candleSvg.querySelector('.candle-body').getAttribute('fill') || '#e0e0e0');
+                // Position the color picker near the candle
+                const candleRect = candleSvg.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                candleColorPicker.style.position = 'absolute';
+                candleColorPicker.style.left = (candleRect.left - wrapperRect.left + candleRect.width / 2 - 15) + 'px';
+                candleColorPicker.style.top = (candleRect.top - wrapperRect.top - 36) + 'px';
+                candleColorPicker.style.display = 'block';
+                candleColorPicker.click();
+                return;
+            }
+        });
+        candleColorPicker.addEventListener('input', function() {
+            if (currentCandleForColor) {
+                const color = candleColorPicker.value;
+                const body = currentCandleForColor.querySelector('.candle-body');
+                if (body) body.setAttribute('fill', color);
+                currentCandleForColor = null;
+            }
+            candleColorPicker.style.display = 'none';
+        });
+        candleColorPicker.addEventListener('blur', function() {
+            candleColorPicker.style.display = 'none';
+        });
+
+        // Menorah color picker logic
+        const menorahSvg = document.getElementById('interactive-menorah');
+        const colorPicker = document.getElementById('menorah-color-picker');
+        menorahSvg.addEventListener('click', function(e) {
+            // Position the color picker very close to the top center of the menorah SVG (just above y=60)
+            const svgRect = menorahSvg.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            // The top ellipse is at y=60 in SVG coordinates, so find its screen position
+            // SVG viewBox is 0 0 400 400, so scale factor is svgRect.height/400
+            const scaleY = svgRect.height / 400;
+            const scaleX = svgRect.width / 400;
+            const ellipseY = 60 * scaleY; // y=60 in SVG
+            const ellipseX = 200 * scaleX; // center x=200 in SVG
+            colorPicker.style.position = 'absolute';
+            colorPicker.style.left = (svgRect.left - wrapperRect.left + ellipseX - 15) + 'px';
+            colorPicker.style.top = (svgRect.top - wrapperRect.top + ellipseY - 30) + 'px'; // 10px above ellipse
+            colorPicker.style.display = 'block';
+            colorPicker.click();
+        });
+        colorPicker.addEventListener('input', function() {
+            const color = colorPicker.value;
+            menorahSvg.querySelectorAll('.menorah-color').forEach(el => {
+                if (el.tagName === 'path') {
+                    el.setAttribute('stroke', color);
+                } else {
+                    el.setAttribute('fill', color);
+                }
+            });
+            colorPicker.style.display = 'none';
+        });
+        colorPicker.addEventListener('blur', function() {
+            colorPicker.style.display = 'none';
+        });
+        // Helper to convert rgb to hex
+        function rgbToHex(rgb) {
+            if (!rgb) return '#e0e0e0';
+            if (rgb[0] === '#') return rgb;
+            const result = rgb.match(/\d+/g);
+            if (!result) return '#e0e0e0';
+            return '#' + result.slice(0, 3).map(x => (+x).toString(16).padStart(2, '0')).join('');
         }
     </script>
     <script src="app.js"></script>
